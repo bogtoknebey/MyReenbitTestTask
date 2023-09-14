@@ -1,0 +1,20 @@
+<body>
+  <div class="container">
+    <div class="main-div">
+      <form class="main-form">
+        <div class="form-header">Sending Form</div>
+        <div class="form-div">
+          <span class="form-span">E-mail:</span><br>
+          <input type="email">
+          <span *ngIf="emailError" class="error-span">*Wrong e-mail</span>
+        </div>
+        <div class="form-div">
+          <span class="form-span">File:</span><br>
+          <input type="file">
+          <span *ngIf="fileError" class="error-span">*Wrong file</span>
+        </div>
+        <input type="submit" class="btn-primary">
+      </form>
+    </div>
+  </div>
+</body>
