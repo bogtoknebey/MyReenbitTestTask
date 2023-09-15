@@ -5,15 +5,15 @@
         <div class="form-header">Sending Form</div>
         <div class="form-div">
           <span class="form-span">E-mail:</span><br>
-          <input type="email">
+          <input type="email" [(ngModel)]="email" name="email" required>
           <span *ngIf="emailError" class="error-span">*Wrong e-mail</span>
         </div>
         <div class="form-div">
           <span class="form-span">File:</span><br>
-          <input type="file">
+          <input type="file" (change)="onFileSelected($event)" name="file" accept=".docx" required>
           <span *ngIf="fileError" class="error-span">*Wrong file</span>
         </div>
-        <input type="submit" class="btn-primary">
+        <input type="submit" (click)="onSubmit()" class="btn-primary" [disabled]="emailError || fileError">
       </form>
     </div>
   </div>
