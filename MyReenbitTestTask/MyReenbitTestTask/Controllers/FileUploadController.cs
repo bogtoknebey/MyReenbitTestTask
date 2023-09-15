@@ -104,7 +104,6 @@ namespace MyReenbitTestTask.Controllers
 
                 // Attach the file to the email
                 message.Attachments.Add(new Attachment(filePath));
-
                 client.Send(message);
             }
         }

@@ -12,6 +12,8 @@ export class AppComponent {
   fileError: boolean = false;
   selectedFile: File | null = null;
   email: string = '';
+  isSent: boolean = false;
+  sendMessage: string = "";
 
   constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
     this.currUrl = baseUrl + 'fileupload';
@@ -44,9 +46,12 @@ export class AppComponent {
     this.http.post(this.currUrl, formData, { responseType: 'json' })
       .subscribe(response => {
         console.log(response);
+        this.sendMessage = "file have been sended";
       }, error => {
         console.error(error);
+        this.sendMessage = "send fail";
       });
+    this.isSent = true;
   }
 
   private isValidEmail(email: string): boolean {

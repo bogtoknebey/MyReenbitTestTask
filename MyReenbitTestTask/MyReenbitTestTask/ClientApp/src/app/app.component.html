@@ -13,7 +13,8 @@
           <input type="file" (change)="onFileSelected($event)" name="file" accept=".docx" required>
           <span *ngIf="fileError" class="error-span">*Wrong file</span>
         </div>
-        <input type="submit" (click)="onSubmit()" class="btn-primary" [disabled]="emailError || fileError">
+        <input type="submit" (click)="onSubmit()" class="btn-primary" [disabled]="emailError || fileError"><br>
+        <div *ngIf="isSent" class="">{{sendMessage}}</div>
       </form>
     </div>
   </div>
