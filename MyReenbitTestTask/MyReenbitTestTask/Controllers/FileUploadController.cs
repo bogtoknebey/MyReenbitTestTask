@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
 using System.Net;
+using System.IO;
+using MailKit.Net.Smtp;
+using MailKit;
+using MimeKit;
 
 namespace MyReenbitTestTask.Controllers
 {
@@ -41,7 +44,7 @@ namespace MyReenbitTestTask.Controllers
                 var email = Request.Form["email"].ToString();
 
                 // Validate the email (you can add more validation here)
-                if (string.IsNullOrWhiteSpace(email) || !IsValidEmail(email))
+                if (string.IsNullOrWhiteSpace(email))
                 {
                     return BadRequest("Invalid email");
                 }
@@ -69,42 +72,50 @@ namespace MyReenbitTestTask.Controllers
             }
         }
 
-        // Function to validate email (you can use a more comprehensive email validation)
-        private bool IsValidEmail(string email)
+        private void SendEmailNotification(string emailAddress, string filePath)
         {
-            try
-            {
-                var addr = new MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+            string host = _configuration["Smtp:Host"];
+            int port = int.Parse(_configuration["Smtp:AlterPort"]);
+            string username = _configuration["Smtp:Username"];
+            string password = _configuration["Smtp:Password"];
+            string subject = "Uploading file.";
+            string message = "Your file has been successfully uploaded.";
 
-        // Function to send an email notification
-        private void SendEmailNotification(string email, string filePath)
-        {
-            using (var client = new SmtpClient(_configuration["Smtp:Host"]))
-            {
-                client.Port = int.Parse(_configuration["Smtp:Port"]);
-                client.Credentials = new NetworkCredential(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-                client.EnableSsl = true;
+            var email = new MimeMessage();
+            email.From.Add(new MailboxAddress("Sender Name", username));
+            email.To.Add(new MailboxAddress("Receiver Name", emailAddress));
 
-                var message = new MailMessage
+            email.Subject = subject;
+            email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+            {
+                Text = $"<b>{message}</b>"
+            };
+
+            using (var stream = new FileStream(filePath, FileMode.Open))
+            {
+                var attachment = new MimePart("application", "octet-stream")
                 {
-                    From = new MailAddress(_configuration["Smtp:Username"]),
-                    Subject = "File Upload Notification",
-                    Body = "Your file has been successfully uploaded.",
-                    IsBodyHtml = false
+                    Content = new MimeContent(stream),
+                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                    ContentTransferEncoding = ContentEncoding.Base64,
+                    FileName = Path.GetFileName(filePath) // Use the file's name as the attachment name
                 };
 
-                message.To.Add(email);
 
-                // Attach the file to the email
-                message.Attachments.Add(new Attachment(filePath));
-                client.Send(message);
+                // Add the attachment to the email
+                email.Body = new Multipart("mixed")
+                {
+                    email.Body,
+                    attachment
+                };
+
+                using (var smtp = new SmtpClient())
+                {
+                    smtp.Connect(host, port, false);
+                    smtp.Authenticate(username, password);
+                    smtp.Send(email);
+                    smtp.Disconnect(true);
+                }
             }
         }
     }
